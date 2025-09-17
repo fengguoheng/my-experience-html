@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FengGuoHeng's Blog</title>
+    <!-- 引入marked库用于Markdown解析 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <!-- 引入Font Awesome用于图标 -->
+        <style>
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: #85cdff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        ::-webkit-scrollbar {
+            /*隐藏滚轮*/
+            display: none;
+        }
+
+        /* 星空背景样式 */
+        .box-xk {
+            width: 100%;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%) !important;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 语言切换按钮样式 */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            background-color: rgba(133, 205, 255, 0.2);
+            color: #e0e0e0;
+            border: 1px solid #85cdff;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .language-toggle:hover {
+            background-color: rgba(133, 205, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(133, 205, 255, 0.2);
+        }
+
+        /* Markdown容器样式 */
+        .markdown-container {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #e0e0e0;
+        }
+
+        .markdown-content {
+            line-height: 1.8;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3 {
+            color: #aac9fa;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 6px #85cdff80;
+        }
+
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content ul li {
+            list-style: disc;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content blockquote {
+            border-left: 3px solid #85cdff;
+            padding-left: 1rem;
+            margin-left: 0;
+            color: #b0b0b0;
+            font-style: italic;
+        }
+
+        .markdown-content pre {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content code {
+            font-family: 'Fira Code', monospace;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .markdown-content strong {
+            color: #aac9fa;
+        }
+
+        .markdown-content em {
+            color: #b0d0ff;
+        }
+
+        /* 星星容器基础样式 */
+        #stars, #stars2, #stars3 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 星星闪烁动画 */
+        @keyframes twinkle {
+            0% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* 不同星星容器的动画延迟和移动效果 */
+        #stars {
+            animation: moveStars 50s linear infinite;
+        }
+
+        #stars2 {
+            animation: moveStars 80s linear infinite;
+        }
+
+        #stars3 {
+            animation: moveStars 120s linear infinite;
+        }
+
+        /* 星星移动动画 */
+        @keyframes moveStars {
+            from {
+                transform: translateY(0) translateX(0);
+            }
+            to {
+                transform: translateY(-1000px) translateX(1000px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景容器 -->
+    <div class="box-xk">
+        <div id="stars"></div>
+        <div id="stars2"></div>
+        <div id="stars3"></div>
+        
+        <!-- 语言切换按钮 -->
+        <button 
+            id="language-toggle" 
+            class="language-toggle"
+        >
+            Switch to English
+        </button>
+        
+        <!-- Markdown内容容器 -->
+        <div id="markdown-container" class="markdown-container">
+            <div id="markdown-content" class="markdown-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        const state = {
+            isChinese: true,
+            // 中文Markdown内容
+            chineseMd: `# 关于我的技术特质
+
+以下是我在技术领域的两个主要特点：
+
+## 第一，对技术抱有浓厚热情
+
+我始终保持着对新技术的好奇心和探索欲望，热衷于学习和掌握前沿技术动向。无论是编程语言、框架工具还是开发理念，我都愿意投入时间深入研究，不断拓展自己的技术视野。
+
+## 第二，善于运用各类工具
+
+在日常学习和开发过程中，我能够熟练运用多种工具提升效率：
+
+- **豆包**：用于获取技术问题解答和学习指导
+- **VS Code**：作为主要代码编辑器，配合丰富插件提高开发效率
+- **GitHub 星标排行榜**：跟踪热门开源项目和技术趋势
+- **ChatGPT**：辅助解决编程难题和生成代码示例
+- **CSDN**：查阅技术文章和解决方案
+- **B站**：观看技术教程和开发者分享
+
+### 工具使用示例
+
+\`\`\`javascript
+// 使用工具链提升开发效率的思路
+function improveDevelopmentEfficiency() {
+  const tools = ['豆包', 'VS Code', 'GitHub', 'ChatGPT', 'CSDN', 'B站'];
+  tools.forEach(tool => {
+    console.log(\`善用\${tool}提升学习和开发效率\`);
+  });
+}
+\`\`\`
+
+> 有效的工具使用能够极大提升学习效率和开发质量
+> 选择合适的工具组合是技术成长的重要因素
+
+通过这些工具的组合使用，我能够更高效地解决问题、学习知识和完成开发任务，不断提升自己的技术能力。
+`,
+            // 英文Markdown内容
+            englishMd: `# About My Technical Traits
+
+Here are two main characteristics in my technical field:
+
+## First, a strong passion for technology
+
+I always maintain curiosity and desire to explore new technologies, and am keen to learn and master cutting-edge technological trends. Whether it's programming languages, framework tools or development concepts, I'm willing to invest time in in-depth research to continuously expand my technical horizons.
+
+## Second, proficiency in using various tools
+
+In daily study and development, I can skillfully use multiple tools to improve efficiency:
+
+- **Doubao**：For obtaining technical problem solutions and learning guidance
+- **VS Code**：As the main code editor, with rich plugins to improve development efficiency
+- **GitHub Star Ranking**：Tracking popular open source projects and technical trends
+- **ChatGPT**：Assisting in solving programming problems and generating code examples
+- **CSDN**：Consulting technical articles and solutions
+- **Bilibili**：Watching technical tutorials and developer sharing
+
+### Tool usage example
+
+\`\`\`javascript
+// Idea of using toolchain to improve development efficiency
+function improveDevelopmentEfficiency() {
+  const tools = ['Doubao', 'VS Code', 'GitHub', 'ChatGPT', 'CSDN', 'Bilibili'];
+  tools.forEach(tool => {
+    console.log(\`Make good use of \${tool} to improve learning and development efficiency\`);
+  });
+}
+\`\`\`
+
+> Effective use of tools can greatly improve learning efficiency and development quality
+> Choosing the right combination of tools is an important factor in technical growth
+
+Through the combined use of these tools, I can solve problems, learn knowledge and complete development tasks more efficiently, and constantly improve my technical capabilities.
+`
+        };
+
+        // DOM元素
+        const elements = {
+            languageToggle: document.getElementById('language-toggle'),
+            markdownContent: document.getElementById('markdown-content')
+        };
+
+        // 更新Markdown内容
+        function updateMarkdownContent() {
+            const content = state.isChinese ? state.chineseMd : state.englishMd;
+            elements.markdownContent.innerHTML = marked.parse(content);
+        }
+
+        // 切换语言
+        function toggleLanguage() {
+            state.isChinese = !state.isChinese;
+            elements.languageToggle.textContent = state.isChinese ? 'Switch to English' : '切换到中文';
+            updateMarkdownContent();
+        }
+
+        // 动态创建星星
+        function createStars() {
+            const starsContainers = ['stars', 'stars2', 'stars3'];
+            const totalStars = 300;
+            
+            starsContainers.forEach((id, index) => {
+                const container = document.getElementById(id);
+                if (!container) return;
+                
+                const starsCount = Math.floor(totalStars / starsContainers.length) + (index === 0 ? totalStars % starsContainers.length : 0);
+                
+                for (let i = 0; i < starsCount; i++) {
+                    const star = document.createElement('div');
+                    
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    const size = Math.random() * (index + 1) + 1;
+                    const opacity = Math.random() * 0.8 + 0.2;
+                    
+                    star.style.cssText = `
+                        position: absolute;
+                        left: ${x}%;
+                        top: ${y}%;
+                        width: ${size}px;
+                        height: ${size}px;
+                        background: white;
+                        border-radius: 50%;
+                        opacity: ${opacity};
+                        box-shadow: 0 0 ${size * 2}px white;
+                        animation: twinkle ${Math.random() * 5 + 2}s infinite alternate;
+                    `;
+                    
+                    container.appendChild(star);
+                }
+            });
+        }
+
+        // 绑定事件监听
+        function bindEvents() {
+            // 语言切换
+            elements.languageToggle.addEventListener('click', toggleLanguage);
+        }
+
+        // 初始化
+        function init() {
+            updateMarkdownContent();
+            createStars();
+            bindEvents();
+            window.scrollTo(0, 0);
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
